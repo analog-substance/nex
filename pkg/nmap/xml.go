@@ -8,6 +8,11 @@ import (
 	"github.com/Ullaakut/nmap/v2"
 )
 
+const xmlHeader string = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="/static/nmap.xsl" type="text/xsl"?>
+`
+
 func XMLToHosts(path string) error {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
@@ -27,6 +32,7 @@ func XMLToHosts(path string) error {
 		if err != nil {
 			return err
 		}
+		bytes = append([]byte(xmlHeader), bytes...)
 
 		var hostnames []string
 		for _, hostname := range h.Hostnames {
