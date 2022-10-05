@@ -1,6 +1,11 @@
 package nmap
 
-import "github.com/analog-substance/arsenic/lib/host"
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/analog-substance/arsenic/lib/host"
+)
 
 func getHost(hostnames []string, ips []string) (*host.Host, error) {
 	var err error
@@ -16,4 +21,13 @@ func getHost(hostnames []string, ips []string) (*host.Host, error) {
 		}
 	}
 	return currentHost, nil
+}
+
+func writeToFile(h *host.Host, name string, data []byte) error {
+	path := filepath.Join(h.Dir, "recon", name)
+	err := os.WriteFile(path, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }

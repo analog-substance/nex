@@ -2,8 +2,8 @@ package nmap
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/Ullaakut/nmap/v2"
 )
@@ -13,7 +13,7 @@ const xmlHeader string = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="/static/nmap.xsl" type="text/xsl"?>
 `
 
-func XMLToHosts(path string) error {
+func XMLToHosts(path string, name string) error {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -49,8 +49,7 @@ func XMLToHosts(path string) error {
 			return err
 		}
 
-		nmapPath := filepath.Join(currentHost.Dir, "recon", "nmap-punched-tcp.xml")
-		err = os.WriteFile(nmapPath, bytes, 0644)
+		err = writeToFile(currentHost, fmt.Sprintf("%s.xml", name), bytes)
 		if err != nil {
 			return err
 		}

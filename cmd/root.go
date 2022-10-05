@@ -12,12 +12,22 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "nmap2host",
 	Short: "Split nmap scans into separate files for each host scanned.",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		path, _ := cmd.Flags().GetString("path")
-		err := nmap.XMLToHosts(fmt.Sprintf("%s.xml", path))
-		if err != nil {
+		name, _ := cmd.Flags().GetString("name")
+
+		err := nmap.XMLToHosts(fmt.Sprintf("%s.xml", path), name)
+		if err != nil && !os.IsNotExist(err) {
+			fmt.Println(err)
+		}
+
+		err = nmap.NmapToHosts(fmt.Sprintf("%s.nmap", path), name)
+		if err != nil && !os.IsNotExist(err) {
+			fmt.Println(err)
+		}
+
+		err = nmap.GnmapToHosts(fmt.Sprintf("%s.gnmap", path), name)
+		if err != nil && !os.IsNotExist(err) {
 			fmt.Println(err)
 		}
 	},
@@ -35,4 +45,6 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringP("path", "p", "", "Path of nmap files without the extension")
 	rootCmd.MarkFlagRequired("path")
+
+	rootCmd.Flags().StringP("name", "n", "nmap-tcp", "Name of the file to be used for each host, without the extension.")
 }
