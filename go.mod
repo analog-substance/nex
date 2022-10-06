@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Ullaakut/nmap/v2 v2.2.1
-	github.com/analog-substance/arsenic v0.0.0-20220921230836-4d797f985cec
+	github.com/analog-substance/arsenic v0.0.0-20221006130606-267b63a85b8c
 	github.com/spf13/cobra v1.5.0
 )
 
@@ -13,7 +13,6 @@ require (
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/lair-framework/go-nmap v0.0.0-20191202052157-3507e0b03523 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
