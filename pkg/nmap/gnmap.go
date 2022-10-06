@@ -24,17 +24,12 @@ func GnmapToHosts(path string, name string) error {
 
 	var currentHost *host.Host
 	var lines []string
-	commandLine := ""
+	var header []string
 	ip := ""
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-
-		if commandLine == "" {
-			commandLine = line
-			continue
-		}
 
 		// If we hit this string, there are no more hosts
 		if doneRe.MatchString(line) {
@@ -46,6 +41,11 @@ func GnmapToHosts(path string, name string) error {
 		}
 
 		match := hostRe.FindStringSubmatch(line)
+		if len(match) == 0 {
+			header = append(header, line)
+			continue
+		}
+
 		if match[1] != ip {
 			// Write nmap file for current host before starting a new host
 			if currentHost != nil {
@@ -62,7 +62,7 @@ func GnmapToHosts(path string, name string) error {
 				return err
 			}
 
-			lines = []string{commandLine}
+			lines = append(lines[:0], header...)
 		}
 
 		lines = append(lines, line)
