@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/analog-substance/nmap2host/pkg/nmap"
 	"github.com/spf13/cobra"
@@ -16,21 +17,38 @@ var rootCmd = &cobra.Command{
 		path, _ := cmd.Flags().GetString("path")
 		name, _ := cmd.Flags().GetString("name")
 
-		err := nmap.XMLToHosts(fmt.Sprintf("%s.xml", path), name)
-		if err != nil && !os.IsNotExist(err) {
-			fmt.Println(err)
+		ignoreXML, _ := cmd.Flags().GetBool("ignore-xml")
+		if !ignoreXML {
+			err := nmap.XMLToHosts(ensureExt(path, ".xml"), name)
+			if err != nil && !os.IsNotExist(err) {
+				fmt.Println(err)
+			}
 		}
 
-		err = nmap.NmapToHosts(fmt.Sprintf("%s.nmap", path), name)
-		if err != nil && !os.IsNotExist(err) {
-			fmt.Println(err)
+		ignoreNmap, _ := cmd.Flags().GetBool("ignore-nmap")
+		if !ignoreNmap {
+			err := nmap.NmapToHosts(ensureExt(path, ".nmap"), name)
+			if err != nil && !os.IsNotExist(err) {
+				fmt.Println(err)
+			}
 		}
 
-		err = nmap.GnmapToHosts(fmt.Sprintf("%s.gnmap", path), name)
-		if err != nil && !os.IsNotExist(err) {
-			fmt.Println(err)
+		ignoreGnmap, _ := cmd.Flags().GetBool("ignore-gnmap")
+		if !ignoreGnmap {
+			err := nmap.GnmapToHosts(ensureExt(path, ".gnmap"), name)
+			if err != nil && !os.IsNotExist(err) {
+				fmt.Println(err)
+			}
 		}
 	},
+}
+
+func ensureExt(path string, ext string) string {
+	pathExt := filepath.Ext(path)
+	if pathExt != ext {
+		path = fmt.Sprintf("%s%s", path, ext)
+	}
+	return path
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -47,4 +65,7 @@ func init() {
 	rootCmd.MarkFlagRequired("path")
 
 	rootCmd.Flags().StringP("name", "n", "nmap-tcp", "Name of the file to be used for each host, without the extension.")
+	rootCmd.Flags().Bool("ignore-nmap", false, "Ignore .nmap files.")
+	rootCmd.Flags().Bool("ignore-gnmap", false, "Ignore .gnmap files.")
+	rootCmd.Flags().Bool("ignore-xml", false, "Ignore .xml files.")
 }
