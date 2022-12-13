@@ -1,4 +1,4 @@
-module github.com/analog-substance/nmap2host
+module github.com/analog-substance/nex
 
 go 1.19
 

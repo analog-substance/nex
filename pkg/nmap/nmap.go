@@ -10,7 +10,7 @@ import (
 	"github.com/analog-substance/arsenic/lib/host"
 )
 
-func NmapToHosts(path string, name string) error {
+func NmapSplit(path string, name string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err

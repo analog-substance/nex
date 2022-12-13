@@ -13,7 +13,7 @@ const xmlHeader string = `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="/static/nmap.xsl" type="text/xsl"?>
 `
 
-func XMLToHosts(path string, name string) error {
+func XMLSplit(path string, name string) error {
 	bytes, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -80,4 +80,36 @@ func newXMLRun(run *nmap.Run) *nmap.Run {
 		TaskEnd:          run.TaskEnd,
 		ScanInfo:         run.ScanInfo,
 	}
+}
+
+func XMLMerge(paths []string) (*nmap.Run, error) {
+	var all *nmap.Run
+	for _, path := range paths {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+
+		run, err := nmap.Parse(data)
+		if err != nil {
+			return nil, err
+		}
+
+		if all == nil {
+			all = run
+			continue
+		}
+
+		for _, h := range run.Hosts {
+			all.Hosts = append(all.Hosts, h)
+		}
+	}
+
+	bytes, err := xml.MarshalIndent(all, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	bytes = append([]byte(xmlHeader), bytes...)
+
+	return nmap.Parse(bytes)
 }

@@ -1,10 +1,6 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package main
 
-import "github.com/analog-substance/nmap2host/cmd"
+import "github.com/analog-substance/nex/cmd"
 
 func main() {
 	cmd.Execute()

@@ -10,7 +10,7 @@ import (
 	"github.com/analog-substance/arsenic/lib/host"
 )
 
-func GnmapToHosts(path string, name string) error {
+func GnmapSplit(path string, name string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
