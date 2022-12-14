@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/Ullaakut/nmap/v2 v2.2.1
 	github.com/analog-substance/arsenic v0.0.0-20221006140725-025f27d01842
+	github.com/jedib0t/go-pretty/v6 v6.4.3
 	github.com/spf13/cobra v1.5.0
 )
 
@@ -14,9 +15,11 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
