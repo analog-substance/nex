@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/Ullaakut/nmap/v2"
+	"github.com/analog-substance/arsenic/lib/set"
 )
 
 const xmlHeader string = `<?xml version="1.0" encoding="UTF-8"?>
@@ -99,6 +101,14 @@ func XMLMerge(paths []string) (*nmap.Run, error) {
 
 		if merged == nil {
 			merged = newXMLRun(run)
+		} else {
+			merged.NmapErrors = append(merged.NmapErrors, run.NmapErrors...)
+			merged.PostScripts = append(merged.PostScripts, run.PostScripts...)
+			merged.PreScripts = append(merged.PreScripts, run.PreScripts...)
+			merged.Targets = append(merged.Targets, run.Targets...)
+			merged.TaskBegin = append(merged.TaskBegin, run.TaskBegin...)
+			merged.TaskEnd = append(merged.TaskEnd, run.TaskEnd...)
+			merged.TaskProgress = append(merged.TaskProgress, run.TaskProgress...)
 		}
 
 		for _, h := range run.Hosts {
@@ -130,6 +140,14 @@ func XMLMerge(paths []string) (*nmap.Run, error) {
 }
 
 func mergeHost(h1 nmap.Host, h2 nmap.Host) nmap.Host {
+	hostnameSet := set.NewSet(nmap.Hostname{})
+	hostnameSet.AddRange(h1.Hostnames)
+	hostnameSet.AddRange(h2.Hostnames)
+
+	ipSet := set.NewSet(nmap.Address{})
+	ipSet.AddRange(h1.Addresses)
+	ipSet.AddRange(h2.Addresses)
+
 	merged := nmap.Host{
 		Distance:     h1.Distance,
 		EndTime:      h1.EndTime,
@@ -147,11 +165,11 @@ func mergeHost(h1 nmap.Host, h2 nmap.Host) nmap.Host {
 		Trace:         h1.Trace,
 		Uptime:        h1.Uptime,
 		Comment:       h1.Comment,
-		Addresses:     h1.Addresses,
+		Addresses:     ipSet.Slice().([]nmap.Address),
 		HostScripts:   append(h1.HostScripts, h2.HostScripts...),
 		Smurfs:        append(h1.Smurfs, h2.Smurfs...),
 		ExtraPorts:    append(h1.ExtraPorts, h2.ExtraPorts...),
-		Hostnames:     append(h1.Hostnames, h2.Hostnames...),
+		Hostnames:     hostnameSet.Slice().([]nmap.Hostname),
 	}
 
 	start1, _ := strconv.ParseInt(h1.StartTime.FormatTime(), 10, 64)
@@ -162,39 +180,82 @@ func mergeHost(h1 nmap.Host, h2 nmap.Host) nmap.Host {
 		merged.EndTime = h2.EndTime
 	}
 
-	hasServiceInfo := func(svc nmap.Service) bool {
-		return svc.Product != "" || svc.Version != "" || svc.ExtraInfo != ""
+	tcpPortMap := make(map[uint16]nmap.Port)
+	udpPortMap := make(map[uint16]nmap.Port)
+	for _, port := range h1.Ports {
+		if strings.EqualFold(port.Protocol, "tcp") {
+			tcpPortMap[port.ID] = port
+		} else {
+			udpPortMap[port.ID] = port
+		}
 	}
 
-	portMap := make(map[uint16]nmap.Port)
-	allPorts := append(h1.Ports, h2.Ports...)
-	for _, port := range allPorts {
+	for _, port := range h2.Ports {
+		var portMap map[uint16]nmap.Port
+		if strings.EqualFold(port.Protocol, "tcp") {
+			portMap = tcpPortMap
+		} else {
+			portMap = udpPortMap
+		}
+
 		foundPort, ok := portMap[port.ID]
-		if !ok {
+		if !ok || start2 > start1 { // If not found or if h2 started after h1
 			portMap[port.ID] = port
 			continue
 		}
 
-		// If any of these aren't empty, more than likely it means a service scan was done
-		// which is more accurate
-		if hasServiceInfo(foundPort.Service) {
-			continue
-		}
-
-		if hasServiceInfo(port.Service) {
-			portMap[port.ID] = port
-			continue
-		}
-
-		// Use most recent one?
-		if start2 > start1 {
-			portMap[port.ID] = port
-		}
+		portMap[port.ID] = mergePort(foundPort, port)
 	}
 
-	for _, p := range portMap {
+	for _, p := range tcpPortMap {
+		merged.Ports = append(merged.Ports, p)
+	}
+
+	for _, p := range udpPortMap {
 		merged.Ports = append(merged.Ports, p)
 	}
 
 	return merged
+}
+
+func hasServiceInfo(svc nmap.Service) bool {
+	return svc.Method == "probed" || svc.Product != "" || svc.Version != "" || svc.ExtraInfo != ""
+}
+
+func mostAccurateService(s1 nmap.Service, s2 nmap.Service) nmap.Service {
+	s1SvcInfo := hasServiceInfo(s1)
+	s2SvcInfo := hasServiceInfo(s2)
+
+	if s1SvcInfo && !s2SvcInfo {
+		return s1
+	}
+
+	if !s1SvcInfo && s2SvcInfo ||
+		s1SvcInfo && s2SvcInfo && s2.Confidence > s1.Confidence {
+		return s2
+	}
+
+	return s1
+}
+
+func mergePort(p1 nmap.Port, p2 nmap.Port) nmap.Port {
+	p1Closed := p1.State.State == "closed"
+	p2Closed := p2.State.State == "closed"
+	if !p1Closed && p2Closed {
+		return p1
+	}
+
+	if p1Closed && !p2Closed {
+		return p2
+	}
+
+	svc := mostAccurateService(p1.Service, p2.Service)
+	return nmap.Port{
+		ID:       p1.ID,
+		Protocol: p1.Protocol,
+		Owner:    p1.Owner,
+		Service:  svc,
+		State:    p1.State,
+		Scripts:  append(p1.Scripts, p2.Scripts...),
+	}
 }
