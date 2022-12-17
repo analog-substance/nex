@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/analog-substance/nex/pkg/nmap"
@@ -37,28 +38,48 @@ var viewCmd = &cobra.Command{
 		t.AppendHeader(columns)
 
 		for _, h := range run.Hosts {
-			var tcp []string
-			var udp []string
+			var tcp []int
+			var udp []int
 			for _, p := range h.Ports {
-				// port := fmt.Sprintf("%d/%s", p.ID, p.Service)
-				port := fmt.Sprintf("%d", p.ID)
-				if p.Protocol == "tcp" {
+				if openOnly && p.State.State == "closed" {
+					continue
+				}
+
+				port := int(p.ID)
+				if strings.EqualFold(p.Protocol, "tcp") {
 					tcp = append(tcp, port)
 				} else {
 					udp = append(udp, port)
 				}
 			}
 
+			sort.Ints(tcp)
+			sort.Ints(udp)
+
 			if openOnly && len(tcp) == 0 && len(udp) == 0 {
 				continue
 			}
 
-			name := h.Addresses[0].String()
-			if len(h.Hostnames) > 0 {
-				name = h.Hostnames[0].String()
+			ipv4 := ""
+			ipv6 := ""
+			for _, addr := range h.Addresses {
+				if addr.AddrType == "ipv4" && ipv4 == "" {
+					ipv4 = addr.Addr
+				} else if addr.AddrType == "ipv6" && ipv6 == "" {
+					ipv6 = addr.Addr
+				}
 			}
 
-			t.AppendRow(table.Row{name, strings.Join(tcp, ","), strings.Join(udp, ",")})
+			name := ipv6
+			if len(h.Hostnames) > 0 {
+				name = h.Hostnames[0].Name
+			} else if ipv4 != "" {
+				name = ipv4
+			}
+
+			tcpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(tcp)), ","), "[]")
+			udpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(udp)), ","), "[]")
+			t.AppendRow(table.Row{name, tcpPorts, udpPorts})
 		}
 		t.SetColumnConfigs([]table.ColumnConfig{
 			{
