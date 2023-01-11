@@ -3,7 +3,9 @@ package nmap
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/Ullaakut/nmap/v2"
 	"github.com/analog-substance/arsenic/lib/host"
 )
 
@@ -27,4 +29,13 @@ func writeToFile(h *host.Host, name string, data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func hasOpenPorts(h nmap.Host) bool {
+	for _, p := range h.Ports {
+		if strings.Contains(p.State.State, "open") {
+			return true
+		}
+	}
+	return false
 }

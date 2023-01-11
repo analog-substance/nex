@@ -19,6 +19,7 @@ var viewCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		openOnly, _ := cmd.Flags().GetBool("open")
+		upOnly, _ := cmd.Flags().GetBool("up")
 
 		var files []string
 		for _, pattern := range args {
@@ -32,7 +33,15 @@ var viewCmd = &cobra.Command{
 			check(fmt.Errorf("No files found"))
 		}
 
-		run, err := nmap.XMLMerge(files)
+		var opts []nmap.Option
+		if upOnly {
+			opts = append(opts, nmap.WithUpOnly())
+		}
+		if openOnly {
+			opts = append(opts, nmap.WithOpenOnly())
+		}
+
+		run, err := nmap.XMLMerge(files, opts...)
 		check(err)
 
 		t := table.NewWriter()
@@ -45,10 +54,6 @@ var viewCmd = &cobra.Command{
 			var tcp []int
 			var udp []int
 			for _, p := range h.Ports {
-				if openOnly && p.State.State == "closed" {
-					continue
-				}
-
 				port := int(p.ID)
 				if strings.EqualFold(p.Protocol, "tcp") {
 					tcp = append(tcp, port)
@@ -59,10 +64,6 @@ var viewCmd = &cobra.Command{
 
 			sort.Ints(tcp)
 			sort.Ints(udp)
-
-			if openOnly && len(tcp) == 0 && len(udp) == 0 {
-				continue
-			}
 
 			ipv4 := ""
 			ipv6 := ""
@@ -133,4 +134,5 @@ func init() {
 
 	viewCmd.Flags().String("sort-by", "Name;asc", "Sort by the specified column. Format: column[;(asc|dsc)]")
 	viewCmd.Flags().Bool("open", false, "Show only hosts with open ports")
+	viewCmd.Flags().Bool("up", false, "Show only hosts that are up")
 }

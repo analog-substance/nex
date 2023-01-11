@@ -85,7 +85,12 @@ func newXMLRun(run *nmap.Run) *nmap.Run {
 	}
 }
 
-func XMLMerge(paths []string) (*nmap.Run, error) {
+func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
+	options := &Options{}
+	for _, o := range opts {
+		o(options)
+	}
+
 	var merged *nmap.Run
 	hostsMap := make(map[string]nmap.Host)
 	for _, path := range paths {
@@ -99,6 +104,31 @@ func XMLMerge(paths []string) (*nmap.Run, error) {
 			return nil, err
 		}
 
+		hasUpHosts := false
+		for _, h := range run.Hosts {
+			if options.upOnly && h.Status.State != "up" {
+				continue
+			} else if h.Status.State == "up" {
+				hasUpHosts = true
+			}
+
+			if options.openOnly && !hasOpenPorts(h) {
+				continue
+			}
+
+			ip := h.Addresses[0].String()
+			foundHost, ok := hostsMap[ip]
+			if !ok {
+				hostsMap[ip] = h
+			} else {
+				hostsMap[ip] = mergeHost(foundHost, h)
+			}
+		}
+
+		if !hasUpHosts {
+			continue
+		}
+
 		if merged == nil {
 			merged = newXMLRun(run)
 		} else {
@@ -110,16 +140,6 @@ func XMLMerge(paths []string) (*nmap.Run, error) {
 			merged.TaskEnd = append(merged.TaskEnd, run.TaskEnd...)
 			merged.TaskProgress = append(merged.TaskProgress, run.TaskProgress...)
 		}
-
-		for _, h := range run.Hosts {
-			ip := h.Addresses[0].String()
-			foundHost, ok := hostsMap[ip]
-			if !ok {
-				hostsMap[ip] = h
-			} else {
-				hostsMap[ip] = mergeHost(foundHost, h)
-			}
-		}
 	}
 
 	if merged == nil {
@@ -127,6 +147,20 @@ func XMLMerge(paths []string) (*nmap.Run, error) {
 	}
 
 	for _, h := range hostsMap {
+		if options.openOnly {
+			var ports []nmap.Port
+			for _, p := range h.Ports {
+				if strings.Contains(p.State.State, "open") {
+					ports = append(ports, p)
+				}
+			}
+
+			if len(ports) == 0 {
+				continue
+			}
+
+			h.Ports = ports
+		}
 		merged.Hosts = append(merged.Hosts, h)
 	}
 
