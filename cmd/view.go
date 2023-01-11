@@ -85,6 +85,11 @@ var viewCmd = &cobra.Command{
 			udpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(udp)), ","), "[]")
 			t.AppendRow(table.Row{name, tcpPorts, udpPorts})
 		}
+
+		if t.Length() == 0 {
+			return
+		}
+
 		t.SetColumnConfigs([]table.ColumnConfig{
 			{
 				Name:     "TCP",
