@@ -28,6 +28,10 @@ var viewCmd = &cobra.Command{
 			files = append(files, matches...)
 		}
 
+		if len(files) == 0 {
+			check(fmt.Errorf("No files found"))
+		}
+
 		run, err := nmap.XMLMerge(files)
 		check(err)
 
