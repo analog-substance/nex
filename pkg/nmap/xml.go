@@ -3,6 +3,7 @@ package nmap
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -101,7 +102,9 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 
 		run, err := nmap.Parse(data)
 		if err != nil {
-			return nil, err
+			log.Printf("[!] Skipping %s due to error: %s", path, err)
+			continue
+			// return nil, err
 		}
 
 		hasUpHosts := false
