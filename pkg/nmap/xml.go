@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -251,6 +252,10 @@ func mergeHost(h1 nmap.Host, h2 nmap.Host) nmap.Host {
 	for _, p := range udpPortMap {
 		merged.Ports = append(merged.Ports, p)
 	}
+
+	sort.Slice(merged.Ports, func(i, j int) bool {
+		return merged.Ports[i].ID < merged.Ports[j].ID
+	})
 
 	return merged
 }
