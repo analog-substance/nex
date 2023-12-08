@@ -30,6 +30,7 @@ func XMLSplit(path string, name string) error {
 	}
 
 	for _, h := range run.Hosts {
+		fmt.Printf("[+] Processing host: %s\n", h.Addresses[0])
 		hostRun := newXMLRun(run)
 		hostRun.Hosts = []nmap.Host{h}
 

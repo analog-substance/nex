@@ -407,6 +407,8 @@ github.com/analog-substance/arsenic v0.0.0-20221006140725-025f27d01842 h1:nu6WqW
 github.com/analog-substance/arsenic v0.0.0-20221006140725-025f27d01842/go.mod h1:nf3PzDkaI5tz5K0tPMn1Yet93O6uyGE8dnszQW/8lCo=
 github.com/analog-substance/arsenic v0.0.0-20231206202520-acc61671c7c5 h1:qprX+TKZFPFu/mBg6OuSPjoiPDmR0QlCfDuF7xwpqyU=
 github.com/analog-substance/arsenic v0.0.0-20231206202520-acc61671c7c5/go.mod h1:CBVyFitLcHmUmXt2OzLApfxATDPlChcHw7XM61C248Q=
+github.com/analog-substance/arsenic v0.0.0-20231207200854-04577379e1c7 h1:q4CdcdTwoRm248x4Lg0rfvtG38nxSUmt/UUAs+IdGc0=
+github.com/analog-substance/arsenic v0.0.0-20231207200854-04577379e1c7/go.mod h1:CBVyFitLcHmUmXt2OzLApfxATDPlChcHw7XM61C248Q=
 github.com/analog-substance/ffufwrap v0.0.2 h1:b6kt11kKl/bDwm6HiDYGUzA71Ml8QeBeZuizLZg0PC0=
 github.com/analog-substance/ffufwrap v0.0.2/go.mod h1:kG9mlIG0acNoZKWeavfSTh0cG6deDTwytlC+fcNnVF8=
 github.com/analog-substance/fileutil v0.0.2/go.mod h1:rQ5hl9ESB8jXhoEjGFOQzwx7wZVYoIIxPaSSHuGFNGQ=

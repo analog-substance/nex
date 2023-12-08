@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/Ullaakut/nmap/v2 v2.2.2
-	github.com/analog-substance/arsenic v0.0.0-20231206202520-acc61671c7c5
+	github.com/analog-substance/arsenic v0.0.0-20231207200854-04577379e1c7
 	github.com/jedib0t/go-pretty/v6 v6.4.9
 	github.com/spf13/cobra v1.8.0
 )
