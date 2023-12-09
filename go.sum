@@ -409,6 +409,8 @@ github.com/analog-substance/arsenic v0.0.0-20231206202520-acc61671c7c5 h1:qprX+T
 github.com/analog-substance/arsenic v0.0.0-20231206202520-acc61671c7c5/go.mod h1:CBVyFitLcHmUmXt2OzLApfxATDPlChcHw7XM61C248Q=
 github.com/analog-substance/arsenic v0.0.0-20231207200854-04577379e1c7 h1:q4CdcdTwoRm248x4Lg0rfvtG38nxSUmt/UUAs+IdGc0=
 github.com/analog-substance/arsenic v0.0.0-20231207200854-04577379e1c7/go.mod h1:CBVyFitLcHmUmXt2OzLApfxATDPlChcHw7XM61C248Q=
+github.com/analog-substance/arsenic v0.0.0-20231208213809-652060d47f6b h1:Y4AMnfVNryGz+gwfQe97emkFxDywwKuRWVify6LrmNM=
+github.com/analog-substance/arsenic v0.0.0-20231208213809-652060d47f6b/go.mod h1:lzadf9WbzuZNFxzfINs/qnxKJFOaWS6dW1a1J3kK5gs=
 github.com/analog-substance/ffufwrap v0.0.2 h1:b6kt11kKl/bDwm6HiDYGUzA71Ml8QeBeZuizLZg0PC0=
 github.com/analog-substance/ffufwrap v0.0.2/go.mod h1:kG9mlIG0acNoZKWeavfSTh0cG6deDTwytlC+fcNnVF8=
 github.com/analog-substance/fileutil v0.0.2/go.mod h1:rQ5hl9ESB8jXhoEjGFOQzwx7wZVYoIIxPaSSHuGFNGQ=
@@ -919,6 +921,8 @@ github.com/spf13/viper v1.10.1/go.mod h1:IGlFPqhNAPKRxohIzWpI5QEy4kuI7tcl5WvR+8q
 github.com/spf13/viper v1.15.0/go.mod h1:fFcTBJxvhhzSJiZy8n+PeW6t8l+KeT/uTARa0jHOQLA=
 github.com/spf13/viper v1.18.0 h1:pN6W1ub/G4OfnM+NR9p7xP9R6TltLUzp5JG9yZD3Qg0=
 github.com/spf13/viper v1.18.0/go.mod h1:EKmWIqdnk5lOcmR72yw6hS+8OPYcwD0jteitLMVB+yk=
+github.com/spf13/viper v1.18.1 h1:rmuU42rScKWlhhJDyXZRKJQHXFX02chSVW1IvkPGiVM=
+github.com/spf13/viper v1.18.1/go.mod h1:EKmWIqdnk5lOcmR72yw6hS+8OPYcwD0jteitLMVB+yk=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
