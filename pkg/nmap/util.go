@@ -1,12 +1,11 @@
 package nmap
 
 import (
+	"github.com/Ullaakut/nmap/v2"
+	"github.com/analog-substance/arsenic/lib/host"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/Ullaakut/nmap/v2"
-	"github.com/analog-substance/arsenic/lib/host"
 )
 
 func getHost(hostnames []string, ips []string) (*host.Host, error) {
@@ -39,3 +38,10 @@ func hasOpenPorts(h nmap.Host) bool {
 	}
 	return false
 }
+
+//func timer(name string) func() {
+//	start := time.Now()
+//	return func() {
+//		log.Printf("%s took %v\n", name, time.Since(start))
+//	}
+//}

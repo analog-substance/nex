@@ -3,7 +3,9 @@ package nmap
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -28,6 +30,7 @@ func XMLSplit(path string, name string) error {
 	}
 
 	for _, h := range run.Hosts {
+		fmt.Printf("[+] Processing host: %s\n", h.Addresses[0])
 		hostRun := newXMLRun(run)
 		hostRun.Hosts = []nmap.Host{h}
 
@@ -101,7 +104,9 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 
 		run, err := nmap.Parse(data)
 		if err != nil {
-			return nil, err
+			log.Printf("[!] Skipping %s due to error: %s", path, err)
+			continue
+			// return nil, err
 		}
 
 		hasUpHosts := false
@@ -161,7 +166,13 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 
 			h.Ports = ports
 		}
+
+		sort.Slice(h.Ports, func(i, j int) bool {
+			return h.Ports[i].ID < h.Ports[j].ID
+		})
+
 		merged.Hosts = append(merged.Hosts, h)
+
 	}
 
 	bytes, err := xml.MarshalIndent(merged, "", "  ")
