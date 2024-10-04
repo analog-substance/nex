@@ -148,7 +148,7 @@ var viewCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(viewCmd)
+	RootCmd.AddCommand(viewCmd)
 
 	viewCmd.Flags().String("sort-by", "Name;asc", "Sort by the specified column. Format: column[;(asc|dsc)]")
 	viewCmd.Flags().Bool("open", false, "Show only hosts with open ports")

@@ -52,7 +52,7 @@ func ensureExt(path string, ext string) string {
 }
 
 func init() {
-	rootCmd.AddCommand(splitCmd)
+	RootCmd.AddCommand(splitCmd)
 
 	splitCmd.Flags().StringP("path", "p", "", "Path of nmap files without the extension")
 	splitCmd.MarkFlagRequired("path")

@@ -55,7 +55,7 @@ func check(err error) {
 }
 
 func init() {
-	rootCmd.AddCommand(mergeCmd)
+	RootCmd.AddCommand(mergeCmd)
 
 	mergeCmd.Flags().StringP("output", "o", "nmap-merge.xml", "Output of resulting merged file.")
 	mergeCmd.Flags().Bool("open", false, "Merge only hosts with open ports")
