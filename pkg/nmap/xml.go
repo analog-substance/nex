@@ -121,8 +121,17 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 				continue
 			}
 
-			ip := h.Addresses[0].String()
-			foundHost, ok := hostsMap[ip]
+			var foundHost nmap.Host
+			var ip string
+			ok := false
+			for _, ipAddr := range h.Addresses {
+				ip = ipAddr.String()
+				foundHost, ok = hostsMap[ip]
+				if ok {
+					break
+				}
+			}
+
 			if !ok {
 				hostsMap[ip] = h
 			} else {

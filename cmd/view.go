@@ -19,7 +19,8 @@ var viewCmd = &cobra.Command{
 	Short: "View Nmap XML scans in various forms",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		hostsOnly, _ := cmd.Flags().GetBool("hosts")
+		ipListOnly, _ := cmd.Flags().GetBool("ip-list")
+		hostListOnly, _ := cmd.Flags().GetBool("host-list")
 		jsonOutput, _ := cmd.Flags().GetBool("json")
 		openOnly, _ := cmd.Flags().GetBool("open")
 		upOnly, _ := cmd.Flags().GetBool("up")
@@ -62,29 +63,18 @@ var viewCmd = &cobra.Command{
 			return
 		}
 
-		if hostsOnly {
+		if ipListOnly || hostListOnly {
 			hosts := map[string]bool{}
 			for _, h := range run.Hosts {
-
-				ipv4 := ""
-				ipv6 := ""
-				for _, addr := range h.Addresses {
-					if addr.AddrType == "ipv4" && ipv4 == "" {
-						ipv4 = addr.Addr
-					} else if addr.AddrType == "ipv6" && ipv6 == "" {
-						ipv6 = addr.Addr
+				if ipListOnly {
+					for _, addr := range h.Addresses {
+						hosts[addr.Addr] = true
+					}
+				} else if hostListOnly {
+					for _, hostname := range h.Hostnames {
+						hosts[hostname.Name] = true
 					}
 				}
-
-				name := ipv6
-				if len(h.Hostnames) > 0 {
-					name = h.Hostnames[0].Name
-				} else if ipv4 != "" {
-					name = ipv4
-				}
-
-				hosts[name] = true
-				continue
 			}
 			var hostSlice []string
 			for host := range hosts {
@@ -176,11 +166,10 @@ var viewCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(viewCmd)
-
 	viewCmd.Flags().String("sort-by", "Name;asc", "Sort by the specified column. Format: column[;(asc|dsc)]")
 	viewCmd.Flags().Bool("open", false, "Show only hosts with open ports")
 	viewCmd.Flags().Bool("up", false, "Show only hosts that are up")
-	viewCmd.Flags().Bool("hosts", false, "Just print hosts")
+	viewCmd.Flags().Bool("host-list", false, "Just print hostnames")
+	viewCmd.Flags().Bool("ip-list", false, "Just print IP addresses")
 	viewCmd.Flags().Bool("json", false, "Print JSON")
-
 }
