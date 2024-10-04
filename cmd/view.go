@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,6 +19,8 @@ var viewCmd = &cobra.Command{
 	Short: "View Nmap XML scans in various forms",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		hostsOnly, _ := cmd.Flags().GetBool("hosts")
+		jsonOutput, _ := cmd.Flags().GetBool("json")
 		openOnly, _ := cmd.Flags().GetBool("open")
 		upOnly, _ := cmd.Flags().GetBool("up")
 
@@ -50,20 +53,16 @@ var viewCmd = &cobra.Command{
 		columns := table.Row{"Name", "TCP", "UDP"}
 		t.AppendHeader(columns)
 
-		for _, h := range run.Hosts {
-			var tcp []int
-			var udp []int
-			for _, p := range h.Ports {
-				port := int(p.ID)
-				if strings.EqualFold(p.Protocol, "tcp") {
-					tcp = append(tcp, port)
-				} else {
-					udp = append(udp, port)
-				}
+		if jsonOutput {
+			output, err := json.MarshalIndent(run.Hosts, "", "  ")
+			if err != nil {
+				check(err)
 			}
+			fmt.Println(string(output))
+			return
+		}
 
-			sort.Ints(tcp)
-			sort.Ints(udp)
+		for _, h := range run.Hosts {
 
 			ipv4 := ""
 			ipv6 := ""
@@ -81,6 +80,25 @@ var viewCmd = &cobra.Command{
 			} else if ipv4 != "" {
 				name = ipv4
 			}
+
+			if hostsOnly {
+				fmt.Println(name)
+				continue
+			}
+
+			var tcp []int
+			var udp []int
+			for _, p := range h.Ports {
+				port := int(p.ID)
+				if strings.EqualFold(p.Protocol, "tcp") {
+					tcp = append(tcp, port)
+				} else {
+					udp = append(udp, port)
+				}
+			}
+
+			sort.Ints(tcp)
+			sort.Ints(udp)
 
 			tcpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(tcp)), ","), "[]")
 			udpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(udp)), ","), "[]")
@@ -135,4 +153,7 @@ func init() {
 	viewCmd.Flags().String("sort-by", "Name;asc", "Sort by the specified column. Format: column[;(asc|dsc)]")
 	viewCmd.Flags().Bool("open", false, "Show only hosts with open ports")
 	viewCmd.Flags().Bool("up", false, "Show only hosts that are up")
+	viewCmd.Flags().Bool("hosts", false, "Just print hosts")
+	viewCmd.Flags().Bool("json", false, "Print JSON")
+
 }
