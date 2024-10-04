@@ -51,7 +51,7 @@ var viewCmd = &cobra.Command{
 		t := table.NewWriter()
 		t.SetOutputMirror(os.Stdout)
 
-		columns := table.Row{"Name", "TCP", "UDP"}
+		columns := table.Row{"IP", "Hostnames", "TCP", "UDP"}
 		t.AppendHeader(columns)
 
 		if jsonOutput {
@@ -86,22 +86,17 @@ var viewCmd = &cobra.Command{
 		}
 		for _, h := range run.Hosts {
 
-			ipv4 := ""
-			ipv6 := ""
+			var ipAddrs []string
 			for _, addr := range h.Addresses {
-				if addr.AddrType == "ipv4" && ipv4 == "" {
-					ipv4 = addr.Addr
-				} else if addr.AddrType == "ipv6" && ipv6 == "" {
-					ipv6 = addr.Addr
-				}
+				ipAddrs = append(ipAddrs, addr.Addr)
 			}
+			sort.Strings(ipAddrs)
 
-			name := ipv6
-			if len(h.Hostnames) > 0 {
-				name = h.Hostnames[0].Name
-			} else if ipv4 != "" {
-				name = ipv4
+			var hostnames []string
+			for _, hostname := range h.Hostnames {
+				hostnames = append(hostnames, hostname.Name)
 			}
+			sort.Strings(hostnames)
 
 			var tcp []int
 			var udp []int
@@ -117,9 +112,11 @@ var viewCmd = &cobra.Command{
 			sort.Ints(tcp)
 			sort.Ints(udp)
 
+			ipAddrsStr := strings.Join(ipAddrs, ",")
+			hostnamesStr := strings.Join(hostnames, "\n")
 			tcpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(tcp)), ","), "[]")
 			udpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(udp)), ","), "[]")
-			t.AppendRow(table.Row{name, tcpPorts, udpPorts})
+			t.AppendRow(table.Row{ipAddrsStr, hostnamesStr, tcpPorts, udpPorts})
 		}
 
 		if t.Length() == 0 {
@@ -141,7 +138,7 @@ var viewCmd = &cobra.Command{
 		parts := strings.Split(sortByArg, ";")
 
 		sortBy := table.SortBy{
-			Name: "Name",
+			Name: "IP",
 			Mode: table.Asc,
 		}
 
