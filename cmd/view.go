@@ -62,6 +62,38 @@ var viewCmd = &cobra.Command{
 			return
 		}
 
+		if hostsOnly {
+			hosts := map[string]bool{}
+			for _, h := range run.Hosts {
+
+				ipv4 := ""
+				ipv6 := ""
+				for _, addr := range h.Addresses {
+					if addr.AddrType == "ipv4" && ipv4 == "" {
+						ipv4 = addr.Addr
+					} else if addr.AddrType == "ipv6" && ipv6 == "" {
+						ipv6 = addr.Addr
+					}
+				}
+
+				name := ipv6
+				if len(h.Hostnames) > 0 {
+					name = h.Hostnames[0].Name
+				} else if ipv4 != "" {
+					name = ipv4
+				}
+
+				hosts[name] = true
+				continue
+			}
+			var hostSlice []string
+			for host := range hosts {
+				hostSlice = append(hostSlice, host)
+			}
+			sort.Strings(hostSlice)
+			fmt.Println(strings.Join(hostSlice, "\n"))
+			return
+		}
 		for _, h := range run.Hosts {
 
 			ipv4 := ""
@@ -79,11 +111,6 @@ var viewCmd = &cobra.Command{
 				name = h.Hostnames[0].Name
 			} else if ipv4 != "" {
 				name = ipv4
-			}
-
-			if hostsOnly {
-				fmt.Println(name)
-				continue
 			}
 
 			var tcp []int
