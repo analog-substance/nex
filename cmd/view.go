@@ -34,7 +34,7 @@ var viewCmd = &cobra.Command{
 		}
 
 		if len(files) == 0 {
-			check(fmt.Errorf("No files found"))
+			check(fmt.Errorf("no files found"))
 		}
 
 		var opts []nmap.Option

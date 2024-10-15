@@ -2,7 +2,7 @@ package nmap
 
 import (
 	"github.com/Ullaakut/nmap/v2"
-	"github.com/analog-substance/arsenic/lib/host"
+	"github.com/analog-substance/arsenic/pkg/host"
 	"os"
 	"path/filepath"
 	"strings"

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/analog-substance/arsenic/lib/host"
+	"github.com/analog-substance/arsenic/pkg/host"
 )
 
 func NmapSplit(path string, name string) error {

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/Ullaakut/nmap/v2"
-	"github.com/analog-substance/arsenic/lib/set"
+	"github.com/analog-substance/arsenic/pkg/set"
 )
 
 const xmlHeader string = `<?xml version="1.0" encoding="UTF-8"?>
