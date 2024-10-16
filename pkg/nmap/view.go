@@ -100,6 +100,7 @@ func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
 		return data
 	}
 
+	portColumnWidth := 50
 	data := [][]string{}
 	var headers = []string{"IP", "Hostnames", "TCP", "UDP"}
 	for _, h := range v.run.Hosts {
@@ -154,8 +155,9 @@ func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
 
 		ipAddrsStr := strings.Join(ipAddrs, "\n")
 		hostnamesStr := strings.Join(hostnames, "\n")
-		tcpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(tcp)), ","), "[]")
-		udpPorts := strings.Trim(strings.Join(strings.Fields(fmt.Sprint(udp)), ","), "[]")
+
+		tcpPorts := wrapPorts(tcp, portColumnWidth)
+		udpPorts := wrapPorts(udp, portColumnWidth)
 
 		data = append(data, []string{
 			ipAddrsStr, hostnamesStr, tcpPorts, udpPorts,
@@ -203,5 +205,34 @@ func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
 			}
 			return baseStyle.Foreground(lipgloss.Color("252"))
 		})
+
 	fmt.Println(ct)
+}
+
+func wrapPorts(ports []int, portColumnWidth int) string {
+
+	portLines := []string{}
+	for _, port := range ports {
+		var nextPort string
+		currentLine := len(portLines) - 1
+		if currentLine == -1 {
+			portLines = append(portLines, fmt.Sprint(port))
+			continue
+		}
+		portStrLen := len(portLines[currentLine])
+
+		if portStrLen > 0 {
+			nextPort = fmt.Sprintf(",%d", port)
+		} else {
+			nextPort = fmt.Sprint(port)
+		}
+
+		if portStrLen+len(nextPort) < portColumnWidth {
+			portLines[currentLine] += nextPort
+		} else {
+			portLines = append(portLines, nextPort)
+		}
+	}
+
+	return strings.Join(portLines, "\n")
 }
