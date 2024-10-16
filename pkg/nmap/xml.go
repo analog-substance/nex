@@ -110,14 +110,6 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 		}
 
 		for _, h := range run.Hosts {
-			if options.upOnly && h.Status.State != "up" {
-				continue
-			}
-
-			if options.openOnly && !hasOpenPorts(h) {
-				continue
-			}
-
 			var foundHost nmap.Host
 			var ip string
 			ok := false

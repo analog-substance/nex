@@ -34,13 +34,6 @@ var viewCmd = &cobra.Command{
 		}
 
 		var opts []nmap.Option
-		if upOnly {
-			opts = append(opts, nmap.WithUpOnly())
-		}
-		if openOnly {
-			opts = append(opts, nmap.WithOpenOnly())
-		}
-
 		run, err := nmap.XMLMerge(files, opts...)
 		check(err)
 
@@ -72,6 +65,13 @@ var viewCmd = &cobra.Command{
 		}
 
 		if viewOptions > 0 {
+			if upOnly {
+				viewOptions = viewOptions | nmap.ListViewAliveHosts
+			}
+			if openOnly {
+				viewOptions = viewOptions | nmap.ListViewOpenPorts
+			}
+
 			nmapView.PrintList(viewOptions)
 			return
 		}
@@ -82,6 +82,13 @@ var viewCmd = &cobra.Command{
 		}
 		if includePrivate {
 			tableViewOptions = tableViewOptions | nmap.TableViewPrivate
+		}
+
+		if upOnly {
+			tableViewOptions = tableViewOptions | nmap.TableViewAliveHosts
+		}
+		if openOnly {
+			tableViewOptions = tableViewOptions | nmap.TableViewOpenPorts
 		}
 
 		sortBy, _ := cmd.Flags().GetString("sort-by")

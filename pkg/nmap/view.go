@@ -21,11 +21,15 @@ const (
 	ListViewPublicIPs
 	ListViewPrivateHostnames
 	ListViewPublicHostnames
+	ListViewAliveHosts
+	ListViewOpenPorts
 )
 
 const (
 	TableViewPrivate = 1 << iota
-	TableViewPublic  = 1 << iota
+	TableViewPublic
+	TableViewAliveHosts
+	TableViewOpenPorts
 )
 
 type View struct {
@@ -52,6 +56,19 @@ func (v *View) PrintList(options ListViewOptions) {
 	for _, h := range v.run.Hosts {
 		hasPrivateIPs := false
 		hasPublicIPs := false
+
+		hostHasOpenPorts := hasOpenPorts(h)
+
+		// we want up hosts and this host is not up
+		if options&ListViewAliveHosts != 0 && h.Status.State != "up" && !hostHasOpenPorts {
+			continue
+		}
+
+		// we want open ports
+		if options&ListViewOpenPorts != 0 && !hostHasOpenPorts {
+			continue
+		}
+
 		for _, addr := range h.Addresses {
 			ip := net.ParseIP(addr.Addr)
 			if ip == nil {
@@ -130,6 +147,18 @@ func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
 
 		// we want public IPs, but this host doesnt have any, skip it
 		if options&TableViewPublic != 0 && !hasPublic {
+			continue
+		}
+
+		hostHasOpenPorts := hasOpenPorts(h)
+
+		// we want up hosts and this host is not up
+		if options&TableViewAliveHosts != 0 && h.Status.State != "up" && !hostHasOpenPorts {
+			continue
+		}
+
+		// we want open ports
+		if options&TableViewOpenPorts != 0 && !hostHasOpenPorts {
 			continue
 		}
 
