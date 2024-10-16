@@ -8,7 +8,7 @@ require (
 	github.com/Ullaakut/nmap/v2 v2.2.2
 	github.com/analog-substance/arsenic v0.3.0
 	github.com/analog-substance/util v1.0.3
-	github.com/jedib0t/go-pretty/v6 v6.6.0
+	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/spf13/cobra v1.8.1
 )
 
@@ -17,10 +17,14 @@ require (
 	github.com/ahmetb/go-linq/v3 v3.2.0 // indirect
 	github.com/analog-substance/fileutil v0.0.3 // indirect
 	github.com/analog-substance/nmap/v3 v3.0.2 // indirect
+	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.7.1 // indirect
+	github.com/charmbracelet/x/ansi v0.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/muesli/termenv v0.15.3-0.20240912151726-82936c5ea257 // indirect
 	github.com/otiai10/copy v1.14.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
