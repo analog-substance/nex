@@ -139,7 +139,7 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 					for _, hostname := range host.Hostnames {
 						for _, myHostname := range h.Hostnames {
 							if myHostname.Name == hostname.Name {
-								hostsMap[hostKey] = h
+								hostsMap[hostKey] = mergeHost(host, h)
 								foundByhostname = true
 								break FIND_BY_HOSTNAME
 							}
