@@ -109,12 +109,9 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 			// return nil, err
 		}
 
-		hasUpHosts := false
 		for _, h := range run.Hosts {
 			if options.upOnly && h.Status.State != "up" {
 				continue
-			} else if h.Status.State == "up" {
-				hasUpHosts = true
 			}
 
 			if options.openOnly && !hasOpenPorts(h) {
@@ -154,10 +151,6 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 			}
 		}
 
-		if !hasUpHosts {
-			continue
-		}
-
 		if merged == nil {
 			merged = newXMLRun(run)
 		} else {
@@ -172,7 +165,7 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 	}
 
 	if merged == nil {
-		return nil, nil
+		return nil, fmt.Errorf("no nmap files merged")
 	}
 
 	for _, h := range hostsMap {

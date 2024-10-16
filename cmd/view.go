@@ -13,11 +13,9 @@ var viewCmd = &cobra.Command{
 	Short: "View Nmap XML scans in various forms",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		listPublicIPs, _ := cmd.Flags().GetBool("pub-ips")
-		listPrivateIPs, _ := cmd.Flags().GetBool("priv-ips")
+		includePublic, _ := cmd.Flags().GetBool("public")
+		includePrivate, _ := cmd.Flags().GetBool("private")
 		listIPs, _ := cmd.Flags().GetBool("ips")
-		listPublicHostnames, _ := cmd.Flags().GetBool("pub-hostnames")
-		listPrivateHostnames, _ := cmd.Flags().GetBool("priv-hostnames")
 		listHostnames, _ := cmd.Flags().GetBool("hostnames")
 		jsonOutput, _ := cmd.Flags().GetBool("json")
 		openOnly, _ := cmd.Flags().GetBool("open")
@@ -54,28 +52,23 @@ var viewCmd = &cobra.Command{
 			return
 		}
 
-		viewOptions := nmap.ViewOptions(0)
+		viewOptions := nmap.ListViewOptions(0)
 		if listHostnames {
-			listPublicHostnames = true
-			listPrivateHostnames = true
+			if includePublic {
+				viewOptions = viewOptions | nmap.ListViewPublicHostnames
+			}
+			if includePrivate {
+				viewOptions = viewOptions | nmap.ListViewPrivateHostnames
+			}
 		}
 
 		if listIPs {
-			listPublicIPs = true
-			listPrivateIPs = true
-		}
-
-		if listPublicHostnames {
-			viewOptions = viewOptions | nmap.ViewListPublicHostnames
-		}
-		if listPrivateHostnames {
-			viewOptions = viewOptions | nmap.ViewListPrivateHostnames
-		}
-		if listPublicIPs {
-			viewOptions = viewOptions | nmap.ViewListPublicIPs
-		}
-		if listPrivateIPs {
-			viewOptions = viewOptions | nmap.ViewListPrivateIPs
+			if includePublic {
+				viewOptions = viewOptions | nmap.ListViewPublicIPs
+			}
+			if includePrivate {
+				viewOptions = viewOptions | nmap.ListViewPrivateIPs
+			}
 		}
 
 		if viewOptions > 0 {
@@ -83,9 +76,17 @@ var viewCmd = &cobra.Command{
 			return
 		}
 
+		tableViewOptions := nmap.TableViewOptions(0)
+		if includePublic {
+			tableViewOptions = tableViewOptions | nmap.TableViewPublic
+		}
+		if includePrivate {
+			tableViewOptions = tableViewOptions | nmap.TableViewPrivate
+		}
+
 		sortBy, _ := cmd.Flags().GetString("sort-by")
 		// no options specified
-		nmapView.PrintTable(sortBy)
+		nmapView.PrintTable(sortBy, tableViewOptions)
 
 	},
 }
@@ -95,11 +96,9 @@ func init() {
 	viewCmd.Flags().String("sort-by", "Hostnames;asc", "Sort by the specified column. Format: column[;(asc|dsc)]")
 	viewCmd.Flags().Bool("open", false, "Show only hosts with open ports")
 	viewCmd.Flags().Bool("up", false, "Show only hosts that are up")
-	viewCmd.Flags().Bool("pub-hostnames", false, "Just print public hostnames")
-	viewCmd.Flags().Bool("priv-hostnames", false, "Just print private hostnames")
-	viewCmd.Flags().Bool("hostnames", false, "Just print hostnames")
-	viewCmd.Flags().Bool("pub-ips", false, "Just print public IP addresses")
-	viewCmd.Flags().Bool("priv-ips", false, "Just print private IP addresses")
-	viewCmd.Flags().Bool("ips", false, "Just print IP addresses")
+	viewCmd.Flags().Bool("hostnames", false, "Just list hostnames")
+	viewCmd.Flags().Bool("private", false, "Only show hosts with private IPs")
+	viewCmd.Flags().Bool("public", false, "Only show hosts with public IPs")
+	viewCmd.Flags().Bool("ips", false, "Just list IP addresses")
 	viewCmd.Flags().Bool("json", false, "Print JSON")
 }
