@@ -56,61 +56,44 @@ var viewCmd = &cobra.Command{
 			})
 		}
 
+		viewOptions := nmap.ViewOptions(0)
+		if includePublic {
+			viewOptions = viewOptions | nmap.ViewPublic
+		}
+
+		if includePrivate {
+			viewOptions = viewOptions | nmap.ViewPrivate
+		}
+
+		if upOnly {
+			viewOptions = viewOptions | nmap.ViewAliveHosts
+		}
+
+		if openOnly {
+			viewOptions = viewOptions | nmap.ViewOpenPorts
+		}
+
 		if jsonOutput {
-			err = nmapView.PrintJSON()
+			err = nmapView.PrintJSON(viewOptions)
 			check(err)
 			return
 		}
 
-		viewOptions := nmap.ListViewOptions(0)
-		if listHostnames {
-			if includePublic {
-				viewOptions = viewOptions | nmap.ListViewPublicHostnames
+		if listHostnames || listIPs {
+			if listHostnames {
+				viewOptions = viewOptions | nmap.ListHostnames
 			}
-			if includePrivate {
-				viewOptions = viewOptions | nmap.ListViewPrivateHostnames
-			}
-		}
-
-		if listIPs {
-			if includePublic {
-				viewOptions = viewOptions | nmap.ListViewPublicIPs
-			}
-			if includePrivate {
-				viewOptions = viewOptions | nmap.ListViewPrivateIPs
-			}
-		}
-
-		if viewOptions > 0 {
-			if upOnly {
-				viewOptions = viewOptions | nmap.ListViewAliveHosts
-			}
-			if openOnly {
-				viewOptions = viewOptions | nmap.ListViewOpenPorts
+			if listIPs {
+				viewOptions = viewOptions | nmap.ListIPs
 			}
 
 			nmapView.PrintList(viewOptions)
 			return
 		}
 
-		tableViewOptions := nmap.TableViewOptions(0)
-		if includePublic {
-			tableViewOptions = tableViewOptions | nmap.TableViewPublic
-		}
-		if includePrivate {
-			tableViewOptions = tableViewOptions | nmap.TableViewPrivate
-		}
-
-		if upOnly {
-			tableViewOptions = tableViewOptions | nmap.TableViewAliveHosts
-		}
-		if openOnly {
-			tableViewOptions = tableViewOptions | nmap.TableViewOpenPorts
-		}
-
 		sortBy, _ := cmd.Flags().GetString("sort-by")
 		// no options specified
-		nmapView.PrintTable(sortBy, tableViewOptions)
+		nmapView.PrintTable(sortBy, viewOptions)
 
 	},
 }

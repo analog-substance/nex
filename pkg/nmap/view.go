@@ -13,23 +13,15 @@ import (
 	"strings"
 )
 
-type ListViewOptions int32
-type TableViewOptions int32
+type ViewOptions int32
 
 const (
-	ListViewPrivateIPs = 1 << iota
-	ListViewPublicIPs
-	ListViewPrivateHostnames
-	ListViewPublicHostnames
-	ListViewAliveHosts
-	ListViewOpenPorts
-)
-
-const (
-	TableViewPrivate = 1 << iota
-	TableViewPublic
-	TableViewAliveHosts
-	TableViewOpenPorts
+	ViewPrivate = 1 << iota
+	ViewPublic
+	ViewAliveHosts
+	ViewOpenPorts
+	ListIPs
+	ListHostnames
 )
 
 type View struct {
@@ -79,32 +71,13 @@ func (v *View) GetHosts() []*nmap.Host {
 	return v.hosts
 }
 
-func (v *View) PrintJSON() error {
-	output, err := json.MarshalIndent(v.GetHosts(), "", "  ")
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(output))
-	return nil
-}
+func (v *View) GetHostWithOptions(options ViewOptions) []*nmap.Host {
+	hosts := v.GetHosts()
+	returnHosts := []*nmap.Host{}
+	for _, h := range hosts {
 
-func (v *View) PrintList(options ListViewOptions) {
-	hosts := map[string]bool{}
-	for _, h := range v.GetHosts() {
 		hasPrivateIPs := false
 		hasPublicIPs := false
-
-		hostHasOpenPorts := hasOpenPorts(h)
-
-		// we want up hosts and this host is not up
-		if options&ListViewAliveHosts != 0 && h.Status.State != "up" && !hostHasOpenPorts {
-			continue
-		}
-
-		// we want open ports
-		if options&ListViewOpenPorts != 0 && !hostHasOpenPorts {
-			continue
-		}
 
 		for _, addr := range h.Addresses {
 			ip := net.ParseIP(addr.Addr)
@@ -115,19 +88,69 @@ func (v *View) PrintList(options ListViewOptions) {
 
 			if isPrivate {
 				hasPrivateIPs = true
-				if options&ListViewPrivateIPs != 0 {
-					hosts[addr.Addr] = true
-				}
 			} else {
 				hasPublicIPs = true
-				if options&ListViewPublicIPs != 0 {
-					hosts[addr.Addr] = true
-				}
+			}
+		}
+
+		// we want private IPs, but this host doesnt have any, skip it
+		if options&ViewPrivate != 0 && !hasPrivateIPs {
+			continue
+		}
+
+		// we want public IPs, but this host doesnt have any, skip it
+		if options&ViewPublic != 0 && !hasPublicIPs {
+			continue
+		}
+
+		hostHasOpenPorts := hasOpenPorts(h)
+
+		// we want up hosts and this host is not up
+		if options&ViewAliveHosts != 0 && h.Status.State != "up" && !hostHasOpenPorts {
+			continue
+		}
+
+		// we want open ports
+		if options&ViewOpenPorts != 0 && !hostHasOpenPorts {
+			continue
+		}
+
+		returnHosts = append(returnHosts, h)
+	}
+
+	return returnHosts
+}
+
+func (v *View) PrintJSON(options ViewOptions) error {
+	hosts := v.GetHostWithOptions(options)
+	output, err := json.MarshalIndent(hosts, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(output))
+	return nil
+}
+
+func (v *View) PrintList(options ViewOptions) {
+	hosts := map[string]bool{}
+	for _, h := range v.GetHostWithOptions(options) {
+
+		for _, addr := range h.Addresses {
+			ip := net.ParseIP(addr.Addr)
+			if ip == nil {
+				continue
+			}
+
+			if options&ListIPs != 0 {
+				hosts[addr.Addr] = true
+			}
+			if options&ViewPublic != 0 && options&ListIPs != 0 {
+				hosts[addr.Addr] = true
 			}
 		}
 
 		for _, hostname := range h.Hostnames {
-			if (hasPrivateIPs && options&ListViewPrivateHostnames != 0) || (hasPublicIPs && options&ListViewPublicHostnames != 0) {
+			if options&ListHostnames != 0 {
 				hosts[hostname.Name] = true
 			}
 		}
@@ -141,7 +164,7 @@ func (v *View) PrintList(options ListViewOptions) {
 	fmt.Println(strings.Join(hostSlice, "\n"))
 }
 
-func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
+func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 
 	re := lipgloss.NewRenderer(os.Stdout)
 	baseStyle := re.NewStyle().Padding(0, 1)
@@ -157,7 +180,7 @@ func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
 	portColumnWidth := 50
 	data := [][]string{}
 	var headers = []string{"IP", "Hostnames", "TCP", "UDP"}
-	for _, h := range v.GetHosts() {
+	for _, h := range v.GetHostWithOptions(options) {
 		hasPrivate := false
 		hasPublic := false
 
@@ -176,28 +199,6 @@ func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
 			ipAddrs = append(ipAddrs, addr.Addr)
 		}
 		sort.Strings(ipAddrs)
-
-		// we want private IPs, but this host doesnt have any, skip it
-		if options&TableViewPrivate != 0 && !hasPrivate {
-			continue
-		}
-
-		// we want public IPs, but this host doesnt have any, skip it
-		if options&TableViewPublic != 0 && !hasPublic {
-			continue
-		}
-
-		hostHasOpenPorts := hasOpenPorts(h)
-
-		// we want up hosts and this host is not up
-		if options&TableViewAliveHosts != 0 && h.Status.State != "up" && !hostHasOpenPorts {
-			continue
-		}
-
-		// we want open ports
-		if options&TableViewOpenPorts != 0 && !hostHasOpenPorts {
-			continue
-		}
 
 		var hostnames []string
 		for _, hostname := range h.Hostnames {
