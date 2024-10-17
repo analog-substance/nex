@@ -12,6 +12,8 @@ github.com/analog-substance/nmap/v3 v3.0.2 h1:wUiNkE/JiYTJmMEImPKptk7kXVJ+wwFu7T
 github.com/analog-substance/nmap/v3 v3.0.2/go.mod h1:PE2PY7j0w37MJdsa0kZDzCDc7L3ftVvBPU+P9mSUHgA=
 github.com/analog-substance/util v1.0.3 h1:qMlqWtJDvrREv1ZKkJ0qvDFZ+VwpwTeN1UBLc5h0bP8=
 github.com/analog-substance/util v1.0.3/go.mod h1:J0ESO2Rd8bhJgEdn/U7CIlNGR72GaH7FcMJXBDqfKsk=
+github.com/analog-substance/util v1.1.0 h1:/8IYlRYCEQHuC36ZIzfD9i7sYsr0JAjYeJAydrdR7RI=
+github.com/analog-substance/util v1.1.0/go.mod h1:rBWsqdi8cyu56eH/qQSJpxbA4ZIpScXBtSj4+9CM81o=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1/go.mod h1:uYgXzlJ7ZpABp8OJ+exZzJJhRNQ2ASbcXHWsFqH8hp8=
 github.com/bmatcuk/doublestar/v4 v4.7.1 h1:fdDeAqgT47acgwd9bd9HxJRDmc9UAmPpc+2m0CXv75Q=

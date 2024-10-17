@@ -7,7 +7,7 @@ toolchain go1.23.1
 require (
 	github.com/Ullaakut/nmap/v2 v2.2.2
 	github.com/analog-substance/arsenic v0.3.0
-	github.com/analog-substance/util v1.0.3
+	github.com/analog-substance/util v1.1.0
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/spf13/cobra v1.8.1
 )
