@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Ullaakut/nmap/v2"
+	"github.com/analog-substance/util/set"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"net"
 	"os"
+	"regexp"
 	"slices"
 	"sort"
 	"strings"
@@ -69,6 +71,92 @@ func (v *View) GetHosts() []*nmap.Host {
 	}
 
 	return v.hosts
+}
+
+func (v *View) GetURLs(prefix string, options ViewOptions) []string {
+
+	urlSet := set.NewStringSet()
+	httpProtocolRe := regexp.MustCompile(`^https?`)
+
+	for _, host := range v.GetHostWithOptions(options) {
+		for _, port := range host.Ports {
+
+			if port.Service.Name == "tcpwrapped" {
+				continue
+			}
+
+			proto := port.Service.Name
+
+			if port.ID == 443 {
+				proto = "https"
+			} else if port.ID == 80 {
+				proto = "http"
+			} else if httpProtocolRe.MatchString(proto) {
+				proto = httpProtocolRe.FindString(proto)
+			}
+
+			urlPort := fmt.Sprintf(":%d", port.ID)
+			if proto == "http" && port.ID == 80 || proto == "https" && port.ID == 443 {
+				urlPort = ""
+			}
+
+			if !strings.HasPrefix(proto, prefix) {
+				continue
+			}
+
+			isCDN := false
+			for _, hostname := range host.Hostnames {
+				if IsCDN(hostname.Name) {
+					isCDN = true
+					break
+				}
+			}
+
+			if !isCDN {
+				// not a CDN? add the IP addresses
+				for _, addr := range host.Addresses {
+					urlSet.Add(fmt.Sprintf("%s://%s%s", proto, addr.Addr, urlPort))
+				}
+			}
+
+			if strings.HasPrefix(proto, "http") {
+				// HTTP eh? add other hostnames so we can test virtual hosting
+				for _, hostname := range host.Hostnames {
+					if !IsDomainSomethingThatWeCareAbout(hostname.Name) {
+						// Don't care....
+						continue
+					}
+
+					urlSet.Add(fmt.Sprintf("%s://%s%s", proto, hostname.Name, urlPort))
+				}
+			}
+		}
+	}
+
+	return urlSet.StringSlice()
+}
+
+func IsDomainSomethingThatWeCareAbout(domain string) bool {
+	// TODO: make this better/configurable
+	if IsCDN(domain) {
+		return false
+	}
+
+	if strings.HasSuffix(domain, ".amazonaws.com") {
+		return !strings.HasPrefix(domain, "ec2-")
+	}
+
+	return true
+}
+
+func IsCDN(domain string) bool {
+	// TODO: make this better/configurable
+
+	if strings.HasSuffix(domain, ".cloudfront.net") {
+		return true
+	}
+
+	return false
 }
 
 func (v *View) GetHostWithOptions(options ViewOptions) []*nmap.Host {
