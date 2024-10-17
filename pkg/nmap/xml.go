@@ -111,35 +111,36 @@ func XMLMerge(paths []string, opts ...Option) (*nmap.Run, error) {
 
 		for _, h := range run.Hosts {
 			var foundHost nmap.Host
-			var ip string
+			var foundHostKey string
 			ok := false
 			for _, ipAddr := range h.Addresses {
-				ip = ipAddr.String()
-				foundHost, ok = hostsMap[ip]
+				foundHostKey = ipAddr.String()
+				foundHost, ok = hostsMap[foundHostKey]
 				if ok {
 					break
 				}
 			}
 
-			if !ok {
-				foundByhostname := false
-			FIND_BY_HOSTNAME:
-				for hostKey, host := range hostsMap {
-					for _, hostname := range host.Hostnames {
-						for _, myHostname := range h.Hostnames {
-							if myHostname.Name == hostname.Name {
-								hostsMap[hostKey] = mergeHost(host, h)
-								foundByhostname = true
-								break FIND_BY_HOSTNAME
-							}
-						}
-					}
-				}
-				if !foundByhostname {
-					hostsMap[ip] = h
-				}
+			//if !ok {
+			//FIND_BY_HOSTNAME:
+			//	for compareHostKey, host := range hostsMap {
+			//		for _, hostname := range host.Hostnames {
+			//			for _, myHostname := range h.Hostnames {
+			//				if myHostname.Name == hostname.Name {
+			//					foundHost = host
+			//					foundHostKey = compareHostKey
+			//					break FIND_BY_HOSTNAME
+			//				}
+			//			}
+			//		}
+			//	}
+			//}
+
+			if len(foundHost.Addresses) > 0 {
+				hostsMap[foundHostKey] = mergeHost(foundHost, h)
 			} else {
-				hostsMap[ip] = mergeHost(foundHost, h)
+				// no host found. add new host based on first IP
+				hostsMap[h.Addresses[0].String()] = h
 			}
 		}
 
