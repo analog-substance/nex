@@ -144,9 +144,6 @@ func (v *View) PrintList(options ViewOptions) {
 			if options&ListIPs != 0 {
 				hosts[addr.Addr] = true
 			}
-			if options&ViewPublic != 0 && options&ListIPs != 0 {
-				hosts[addr.Addr] = true
-			}
 		}
 
 		for _, hostname := range h.Hostnames {

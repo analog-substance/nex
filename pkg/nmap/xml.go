@@ -204,6 +204,11 @@ func mergeHost(h1 nmap.Host, h2 nmap.Host) nmap.Host {
 	ipSet.AddRange(h1.Addresses)
 	ipSet.AddRange(h2.Addresses)
 
+	status := h1.Status
+	if h1.Status.State == "unknown" && h2.Status.State != "unknown" {
+		status = h2.Status
+	}
+
 	merged := nmap.Host{
 		Distance:     h1.Distance,
 		EndTime:      h1.EndTime,
@@ -214,7 +219,7 @@ func mergeHost(h1 nmap.Host, h2 nmap.Host) nmap.Host {
 			Matches:      append(h1.OS.Matches, h2.OS.Matches...),
 			Fingerprints: append(h1.OS.Fingerprints, h2.OS.Fingerprints...),
 		},
-		Status:        h1.Status,
+		Status:        status,
 		TCPSequence:   h1.TCPSequence,
 		TCPTSSequence: h1.TCPTSSequence,
 		Times:         h1.Times,
