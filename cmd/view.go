@@ -5,6 +5,7 @@ import (
 	"github.com/analog-substance/nex/pkg/nmap"
 	"github.com/spf13/cobra"
 	"path/filepath"
+	"slices"
 )
 
 // viewCmd represents the view command
@@ -13,6 +14,7 @@ var viewCmd = &cobra.Command{
 	Short: "View Nmap XML scans in various forms",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		excludeThings, _ := cmd.Flags().GetStringSlice("exclude")
 		includePublic, _ := cmd.Flags().GetBool("public")
 		includePrivate, _ := cmd.Flags().GetBool("private")
 		listIPs, _ := cmd.Flags().GetBool("ips")
@@ -38,6 +40,21 @@ var viewCmd = &cobra.Command{
 		check(err)
 
 		nmapView := nmap.NewNmapView(run)
+
+		if len(excludeThings) > 0 {
+			nmapView.SetFilter(func(hostnames []string, ips []string) bool {
+				for _, exclude := range excludeThings {
+					if slices.Contains(hostnames, exclude) {
+						return false
+					}
+
+					if slices.Contains(ips, exclude) {
+						return false
+					}
+				}
+				return true
+			})
+		}
 
 		if jsonOutput {
 			err = nmapView.PrintJSON()
@@ -108,4 +125,6 @@ func init() {
 	viewCmd.Flags().Bool("public", false, "Only show hosts with public IPs")
 	viewCmd.Flags().Bool("ips", false, "Just list IP addresses")
 	viewCmd.Flags().Bool("json", false, "Print JSON")
+	viewCmd.Flags().StringSlice("exclude", []string{}, "exclude")
+
 }

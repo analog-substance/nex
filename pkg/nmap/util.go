@@ -30,7 +30,7 @@ func writeToFile(h *host.Host, name string, data []byte) error {
 	return nil
 }
 
-func hasOpenPorts(h nmap.Host) bool {
+func hasOpenPorts(h *nmap.Host) bool {
 	for _, p := range h.Ports {
 		if strings.Contains(p.State.State, "open") {
 			return true

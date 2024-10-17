@@ -33,17 +33,54 @@ const (
 )
 
 type View struct {
-	run *nmap.Run
+	run    *nmap.Run
+	filter func(hostnames []string, ips []string) bool
+	hosts  []*nmap.Host
 }
 
 func NewNmapView(run *nmap.Run) *View {
 	return &View{
-		run: run,
+		run:    run,
+		filter: defaultFilter,
 	}
 }
 
+func defaultFilter(hostnames []string, ips []string) bool {
+	return true
+}
+
+func (v *View) SetFilter(filter func(hostnames []string, ips []string) bool) {
+	v.filter = filter
+}
+
+func (v *View) GetHosts() []*nmap.Host {
+	if v.hosts == nil {
+		v.hosts = []*nmap.Host{}
+		for _, host := range v.run.Hosts {
+			if v.filter != nil {
+
+				hostnames := []string{}
+				ips := []string{}
+
+				for _, ip := range host.Addresses {
+					ips = append(ips, ip.String())
+				}
+				for _, hostname := range host.Hostnames {
+					hostnames = append(hostnames, hostname.Name)
+				}
+
+				if v.filter(hostnames, ips) {
+					v.hosts = append(v.hosts, &host)
+				}
+			}
+		}
+	}
+
+	return v.hosts
+}
+
 func (v *View) PrintJSON() error {
-	output, err := json.MarshalIndent(v.run.Hosts, "", "  ")
+	output, err := json.MarshalIndent(v.GetHosts(), "", "  ")
 	if err != nil {
 		return err
 	}
@@ -53,7 +90,7 @@ func (v *View) PrintJSON() error {
 
 func (v *View) PrintList(options ListViewOptions) {
 	hosts := map[string]bool{}
-	for _, h := range v.run.Hosts {
+	for _, h := range v.GetHosts() {
 		hasPrivateIPs := false
 		hasPublicIPs := false
 
@@ -120,7 +157,7 @@ func (v *View) PrintTable(sortByArg string, options TableViewOptions) {
 	portColumnWidth := 50
 	data := [][]string{}
 	var headers = []string{"IP", "Hostnames", "TCP", "UDP"}
-	for _, h := range v.run.Hosts {
+	for _, h := range v.GetHosts() {
 		hasPrivate := false
 		hasPublic := false
 
