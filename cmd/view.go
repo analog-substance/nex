@@ -22,6 +22,7 @@ var viewCmd = &cobra.Command{
 		jsonOutput, _ := cmd.Flags().GetBool("json")
 		openOnly, _ := cmd.Flags().GetBool("open")
 		upOnly, _ := cmd.Flags().GetBool("up")
+		noTCPWrapped, _ := cmd.Flags().GetBool("no-tcpwrapped")
 
 		var files []string
 		for _, pattern := range args {
@@ -73,6 +74,10 @@ var viewCmd = &cobra.Command{
 			viewOptions = viewOptions | nmap.ViewOpenPorts
 		}
 
+		if noTCPWrapped {
+			viewOptions = viewOptions | nmap.IgnoreTCPWrapped
+		}
+
 		if jsonOutput {
 			err = nmapView.PrintJSON(viewOptions)
 			check(err)
@@ -108,6 +113,7 @@ func init() {
 	viewCmd.Flags().Bool("public", false, "Only show hosts with public IPs")
 	viewCmd.Flags().Bool("ips", false, "Just list IP addresses")
 	viewCmd.Flags().Bool("json", false, "Print JSON")
+	viewCmd.Flags().Bool("no-tcpwrapped", false, "Do not show TCPWrapped ports")
 	viewCmd.Flags().StringSlice("exclude", []string{}, "exclude")
 
 }

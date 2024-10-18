@@ -25,6 +25,7 @@ const (
 	ViewOpenPorts
 	ListIPs
 	ListHostnames
+	IgnoreTCPWrapped
 )
 
 type View struct {
@@ -276,6 +277,7 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 		return data
 	}
 
+	ignoreTCPWrapped := options&IgnoreTCPWrapped != 0
 	portColumnWidth := 50
 	data := [][]string{}
 	var headers = []string{"IP", "Hostnames", "TCP", "UDP"}
@@ -310,10 +312,20 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 		for _, p := range h.Ports {
 			port := int(p.ID)
 			if strings.EqualFold(p.Protocol, "tcp") {
-				tcp = append(tcp, port)
+				if !ignoreTCPWrapped || p.Service.Name != "tcpwrapped" {
+					log.Println(p.Service.Name)
+					tcp = append(tcp, port)
+				}
 			} else {
 				udp = append(udp, port)
 			}
+		}
+
+		if ignoreTCPWrapped && len(tcp) == 0 && len(udp) == 0 {
+			// this will still need to be done for the other views :(
+			// need to think of a better way to filter this data in the nmap run
+			// or view filter
+			continue
 		}
 
 		sort.Ints(tcp)
