@@ -57,6 +57,9 @@ func init() {
 			Suffix: ".amazonaws.com",
 		},
 		DomainMatch{
+			Suffix: ".awsglobalaccelerator.com",
+		},
+		DomainMatch{
 			Suffix: ".bc.googleusercontent.com",
 		},
 		DomainMatch{
