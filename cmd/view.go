@@ -15,6 +15,7 @@ var viewCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		excludeThings, _ := cmd.Flags().GetStringSlice("exclude")
+		includeThings, _ := cmd.Flags().GetStringSlice("include")
 		includePublic, _ := cmd.Flags().GetBool("public")
 		includePrivate, _ := cmd.Flags().GetBool("private")
 		listIPs, _ := cmd.Flags().GetBool("ips")
@@ -42,7 +43,7 @@ var viewCmd = &cobra.Command{
 
 		nmapView := nmap.NewNmapView(run)
 
-		if len(excludeThings) > 0 {
+		if len(excludeThings) > 0 || len(includeThings) > 0 {
 			nmapView.SetFilter(func(hostnames []string, ips []string) bool {
 				for _, exclude := range excludeThings {
 					if slices.Contains(hostnames, exclude) {
@@ -53,6 +54,20 @@ var viewCmd = &cobra.Command{
 						return false
 					}
 				}
+
+				if len(includeThings) > 0 {
+					for _, include := range includeThings {
+						if slices.Contains(hostnames, include) {
+							return true
+						}
+
+						if slices.Contains(ips, include) {
+							return true
+						}
+					}
+					return false
+				}
+
 				return true
 			})
 		}
@@ -115,5 +130,6 @@ func init() {
 	viewCmd.Flags().Bool("json", false, "Print JSON")
 	viewCmd.Flags().Bool("no-tcpwrapped", false, "Do not show TCPWrapped ports")
 	viewCmd.Flags().StringSlice("exclude", []string{}, "exclude")
+	viewCmd.Flags().StringSlice("include", []string{}, "include")
 
 }
