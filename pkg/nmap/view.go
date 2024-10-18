@@ -7,6 +7,7 @@ import (
 	"github.com/analog-substance/util/set"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
+	"log"
 	"net"
 	"os"
 	"regexp"
@@ -112,10 +113,19 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 				}
 			}
 
+			if proto == "" {
+				bytes, err := json.Marshal(port)
+				if err == nil {
+					log.Println("empty protocol", string(bytes))
+				}
+			} else {
+				proto = fmt.Sprintf("%s://", proto)
+			}
+
 			if !isCDN {
 				// not a CDN? add the IP addresses
 				for _, addr := range host.Addresses {
-					urlSet.Add(fmt.Sprintf("%s://%s%s", proto, addr.Addr, urlPort))
+					urlSet.Add(fmt.Sprintf("%s%s%s", proto, addr.Addr, urlPort))
 				}
 			}
 
@@ -127,7 +137,7 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 						continue
 					}
 
-					urlSet.Add(fmt.Sprintf("%s://%s%s", proto, hostname.Name, urlPort))
+					urlSet.Add(fmt.Sprintf("%s%s%s", proto, hostname.Name, urlPort))
 				}
 			}
 		}
@@ -146,13 +156,17 @@ func IsDomainSomethingThatWeCareAbout(domain string) bool {
 		return !strings.HasPrefix(domain, "ec2-")
 	}
 
+	if strings.HasSuffix(domain, ".bc.googleusercontent.com") {
+		return false
+	}
+
 	return true
 }
 
 func IsCDN(domain string) bool {
 	// TODO: make this better/configurable
 
-	if strings.HasSuffix(domain, ".cloudfront.net") {
+	if strings.HasSuffix(domain, ".r.cloudfront.net") {
 		return true
 	}
 
