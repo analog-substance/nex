@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Ullaakut/nmap/v2"
+	"github.com/analog-substance/nex/pkg/dns_guard_rail"
 	"github.com/analog-substance/util/set"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
@@ -108,7 +109,7 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 
 			isCDN := false
 			for _, hostname := range host.Hostnames {
-				if IsCDN(hostname.Name) {
+				if dns_guard_rail.IsCDN(hostname.Name) {
 					isCDN = true
 					break
 				}
@@ -133,7 +134,7 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 			if strings.HasPrefix(proto, "http") {
 				// HTTP eh? add other hostnames so we can test virtual hosting
 				for _, hostname := range host.Hostnames {
-					if !IsDomainSomethingThatWeCareAbout(hostname.Name) {
+					if !dns_guard_rail.ShouldInvestigateMore(hostname.Name) {
 						// Don't care....
 						continue
 					}
@@ -145,33 +146,6 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 	}
 
 	return urlSet.StringSlice()
-}
-
-func IsDomainSomethingThatWeCareAbout(domain string) bool {
-	// TODO: make this better/configurable
-	if IsCDN(domain) {
-		return false
-	}
-
-	if strings.HasSuffix(domain, ".amazonaws.com") {
-		return !strings.HasPrefix(domain, "ec2-")
-	}
-
-	if strings.HasSuffix(domain, ".bc.googleusercontent.com") {
-		return false
-	}
-
-	return true
-}
-
-func IsCDN(domain string) bool {
-	// TODO: make this better/configurable
-
-	if strings.HasSuffix(domain, ".r.cloudfront.net") {
-		return true
-	}
-
-	return false
 }
 
 func (v *View) GetHostWithOptions(options ViewOptions) []*nmap.Host {
