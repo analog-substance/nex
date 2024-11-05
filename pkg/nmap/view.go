@@ -81,7 +81,7 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 	urlSet := set.NewStringSet()
 	httpProtocolRe := regexp.MustCompile(`^https?`)
 
-	for _, host := range v.GetHostWithOptions(options) {
+	for _, host := range v.GetHostsWithOptions(options) {
 		for _, port := range host.Ports {
 
 			if port.Service.Name == "tcpwrapped" {
@@ -148,7 +148,7 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 	return urlSet.StringSlice()
 }
 
-func (v *View) GetHostWithOptions(options ViewOptions) []*nmap.Host {
+func (v *View) GetHostsWithOptions(options ViewOptions) []*nmap.Host {
 	hosts := v.GetHosts()
 	returnHosts := []*nmap.Host{}
 	for _, h := range hosts {
@@ -199,7 +199,7 @@ func (v *View) GetHostWithOptions(options ViewOptions) []*nmap.Host {
 }
 
 func (v *View) PrintJSON(options ViewOptions) error {
-	hosts := v.GetHostWithOptions(options)
+	hosts := v.GetHostsWithOptions(options)
 	output, err := json.MarshalIndent(hosts, "", "  ")
 	if err != nil {
 		return err
@@ -210,7 +210,7 @@ func (v *View) PrintJSON(options ViewOptions) error {
 
 func (v *View) PrintList(options ViewOptions) {
 	hosts := map[string]bool{}
-	for _, h := range v.GetHostWithOptions(options) {
+	for _, h := range v.GetHostsWithOptions(options) {
 
 		for _, addr := range h.Addresses {
 			ip := net.ParseIP(addr.Addr)
@@ -255,7 +255,7 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 	portColumnWidth := 50
 	data := [][]string{}
 	var headers = []string{"IP", "Hostnames", "TCP", "UDP"}
-	for _, h := range v.GetHostWithOptions(options) {
+	for _, h := range v.GetHostsWithOptions(options) {
 		hasPrivate := false
 		hasPublic := false
 
@@ -287,7 +287,6 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 			port := int(p.ID)
 			if strings.EqualFold(p.Protocol, "tcp") {
 				if !ignoreTCPWrapped || p.Service.Name != "tcpwrapped" {
-					log.Println(p.Service.Name)
 					tcp = append(tcp, port)
 				}
 			} else {
