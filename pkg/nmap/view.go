@@ -88,6 +88,10 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 				continue
 			}
 
+			if !portIsOpen(&port) {
+				continue
+			}
+
 			proto := port.Service.Name
 
 			if port.ID == 443 {
@@ -284,13 +288,15 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 		var tcp []int
 		var udp []int
 		for _, p := range h.Ports {
-			port := int(p.ID)
-			if strings.EqualFold(p.Protocol, "tcp") {
-				if !ignoreTCPWrapped || p.Service.Name != "tcpwrapped" {
-					tcp = append(tcp, port)
+			if portIsOpen(&p) {
+				port := int(p.ID)
+				if strings.EqualFold(p.Protocol, "tcp") {
+					if !ignoreTCPWrapped || p.Service.Name != "tcpwrapped" {
+						tcp = append(tcp, port)
+					}
+				} else {
+					udp = append(udp, port)
 				}
-			} else {
-				udp = append(udp, port)
 			}
 		}
 

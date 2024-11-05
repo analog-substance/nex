@@ -5,7 +5,6 @@ import (
 	"github.com/analog-substance/arsenic/pkg/host"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func getHost(hostnames []string, ips []string) (*host.Host, error) {
@@ -32,11 +31,15 @@ func writeToFile(h *host.Host, name string, data []byte) error {
 
 func hasOpenPorts(h *nmap.Host) bool {
 	for _, p := range h.Ports {
-		if strings.Contains(p.State.State, "open") {
+		if portIsOpen(&p) {
 			return true
 		}
 	}
 	return false
+}
+
+func portIsOpen(port *nmap.Port) bool {
+	return port.Status() == nmap.Open
 }
 
 //func timer(name string) func() {
