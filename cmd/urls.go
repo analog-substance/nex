@@ -77,10 +77,10 @@ var urlsCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(urlsCmd)
-		//urlsCmd.Flags().Bool("hostnames", false, "Just list hostnames")
+	//urlsCmd.Flags().Bool("hostnames", false, "Just list hostnames")
 	urlsCmd.Flags().Bool("private", false, "Only show hosts with private IPs")
 	urlsCmd.Flags().Bool("public", false, "Only show hosts with public IPs")
-		//urlsCmd.Flags().Bool("ips", false, "Just list IP addresses")
+	//urlsCmd.Flags().Bool("ips", false, "Just list IP addresses")
 	urlsCmd.Flags().StringP("protocol", "p", "", "protocol prefix")
 	urlsCmd.Flags().StringSlice("exclude", []string{}, "exclude")
 	urlsCmd.Flags().IntSlice("exclude-ports", []int{}, "Exclude hosts that have these ports open")
