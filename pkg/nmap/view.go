@@ -30,15 +30,17 @@ const (
 )
 
 type View struct {
-	run    *nmap.Run
-	filter func(hostnames []string, ips []string) bool
-	hosts  []*nmap.Host
+	run          *nmap.Run
+	filter       func(hostnames []string, ips []string) bool
+	hosts        []*nmap.Host
+	excludePorts []int
 }
 
 func NewNmapView(run *nmap.Run) *View {
 	return &View{
-		run:    run,
-		filter: defaultFilter,
+		run:          run,
+		filter:       defaultFilter,
+		excludePorts: []int{},
 	}
 }
 
@@ -48,6 +50,10 @@ func defaultFilter(hostnames []string, ips []string) bool {
 
 func (v *View) SetFilter(filter func(hostnames []string, ips []string) bool) {
 	v.filter = filter
+}
+
+func (v *View) SetExcludePorts(ports []int) {
+	v.excludePorts = ports
 }
 
 func (v *View) GetHosts() []*nmap.Host {
@@ -83,6 +89,10 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 
 	for _, host := range v.GetHostsWithOptions(options) {
 		for _, port := range host.Ports {
+
+			if slices.Contains(v.excludePorts, int(port.ID)) {
+				continue
+			}
 
 			if port.Service.Name == "tcpwrapped" {
 				continue
@@ -196,10 +206,43 @@ func (v *View) GetHostsWithOptions(options ViewOptions) []*nmap.Host {
 			continue
 		}
 
+		// Skip hosts that only have excluded ports open
+		if len(v.excludePorts) > 0 && v.hostOnlyHasExcludedPorts(h) {
+			continue
+		}
+
 		returnHosts = append(returnHosts, h)
 	}
 
 	return returnHosts
+}
+
+func (v *View) hostOnlyHasExcludedPorts(host *nmap.Host) bool {
+	if len(host.Ports) == 0 {
+		return false
+	}
+
+	for _, port := range host.Ports {
+		if port.State.State == "open" {
+			portID := int(port.ID)
+			if !slices.Contains(v.excludePorts, portID) {
+				return false
+			}
+		}
+	}
+
+	hasOpenExcludedPort := false
+	for _, port := range host.Ports {
+		if port.State.State == "open" {
+			portID := int(port.ID)
+			if slices.Contains(v.excludePorts, portID) {
+				hasOpenExcludedPort = true
+				break
+			}
+		}
+	}
+
+	return hasOpenExcludedPort
 }
 
 func (v *View) PrintJSON(options ViewOptions) error {
@@ -290,6 +333,11 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 		for _, p := range h.Ports {
 			if portIsOpen(&p) {
 				port := int(p.ID)
+
+				if slices.Contains(v.excludePorts, port) {
+					continue
+				}
+				
 				if strings.EqualFold(p.Protocol, "tcp") {
 					if !ignoreTCPWrapped || p.Service.Name != "tcpwrapped" {
 						tcp = append(tcp, port)
@@ -367,10 +415,8 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 }
 
 func wrapPorts(ports []int, portColumnWidth int) string {
-
 	portLines := []string{}
 	for _, port := range ports {
-		var nextPort string
 		currentLine := len(portLines) - 1
 		if currentLine == -1 {
 			portLines = append(portLines, fmt.Sprint(port))
@@ -378,6 +424,7 @@ func wrapPorts(ports []int, portColumnWidth int) string {
 		}
 		portStrLen := len(portLines[currentLine])
 
+		var nextPort string
 		if portStrLen > 0 {
 			nextPort = fmt.Sprintf(",%d", port)
 		} else {
