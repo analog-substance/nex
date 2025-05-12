@@ -15,7 +15,6 @@ require (
 require (
 	github.com/NoF0rte/cmd-builder v0.0.0-20220305223538-e35bfeabbbff // indirect
 	github.com/ahmetb/go-linq/v3 v3.2.0 // indirect
-	github.com/analog-substance/fileutil v0.0.3 // indirect
 	github.com/analog-substance/nmap/v3 v3.0.2 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.8.1 // indirect
