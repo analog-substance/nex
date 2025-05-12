@@ -44,7 +44,6 @@ var viewCmd = &cobra.Command{
 
 		nmapView := nmap.NewNmapView(run)
 
-		// Set the excluded ports once
 		nmapView.SetExcludePorts(excludePorts)
 
 		if len(excludeThings) > 0 || len(includeThings) > 0 {

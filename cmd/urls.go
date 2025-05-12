@@ -56,7 +56,6 @@ var urlsCmd = &cobra.Command{
 			})
 		}
 
-		// Set excluded ports once
 		nmapView.SetExcludePorts(excludePorts)
 
 		viewOptions := nmap.ViewOptions(0)
