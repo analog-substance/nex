@@ -27,6 +27,7 @@ const (
 	ListIPs
 	ListHostnames
 	IgnoreTCPWrapped
+	ExcludeWebOnly
 )
 
 type View struct {
@@ -193,6 +194,11 @@ func (v *View) GetHostsWithOptions(options ViewOptions) []*nmap.Host {
 
 		// we want open ports
 		if options&ViewOpenPorts != 0 && !hostHasOpenPorts {
+			continue
+		}
+
+		// Skip hosts that only have web ports open
+		if options&ExcludeWebOnly != 0 && isWebOnlyHost(h) {
 			continue
 		}
 
@@ -392,4 +398,28 @@ func wrapPorts(ports []int, portColumnWidth int) string {
 	}
 
 	return strings.Join(portLines, "\n")
+}
+
+func isWebOnlyHost(host *nmap.Host) bool {
+	if len(host.Ports) == 0 {
+		return false
+	}
+
+	for _, port := range host.Ports {
+		// Check if this is an open port that's not 80 or 443
+		if port.State.State == "open" && port.ID != 80 && port.ID != 443 {
+			return false
+		}
+	}
+
+	// Check if at least one of 80 or 443 is open
+	hasOpenWebPort := false
+	for _, port := range host.Ports {
+		if port.State.State == "open" && (port.ID == 80 || port.ID == 443) {
+			hasOpenWebPort = true
+			break
+		}
+	}
+
+	return hasOpenWebPort
 }
