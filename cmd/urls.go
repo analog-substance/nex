@@ -20,6 +20,7 @@ var urlsCmd = &cobra.Command{
 		includePublic, _ := cmd.Flags().GetBool("public")
 		includePrivate, _ := cmd.Flags().GetBool("private")
 		excludePorts, _ := cmd.Flags().GetIntSlice("exclude-ports")
+		includePorts, _ := cmd.Flags().GetIntSlice("include-ports")
 		//useHostnames, _ := cmd.Flags().GetBool("hostnames")
 		//useIPs, _ := cmd.Flags().GetBool("ips")
 
@@ -57,6 +58,7 @@ var urlsCmd = &cobra.Command{
 		}
 
 		nmapView.SetExcludePorts(excludePorts)
+		nmapView.SetIncludePorts(includePorts)
 
 		viewOptions := nmap.ViewOptions(0)
 		if includePublic {
@@ -83,5 +85,6 @@ func init() {
 	urlsCmd.Flags().StringP("protocol", "p", "", "protocol prefix")
 	urlsCmd.Flags().StringSlice("exclude", []string{}, "exclude")
 	urlsCmd.Flags().IntSlice("exclude-ports", []int{}, "Exclude hosts that have these ports open")
+	viewCmd.Flags().IntSlice("include-ports", []int{}, "Include these ports from the output")
 
 }
