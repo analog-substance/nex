@@ -34,6 +34,7 @@ type View struct {
 	filter       func(hostnames []string, ips []string) bool
 	hosts        []*nmap.Host
 	excludePorts []int
+	includePorts []int
 }
 
 func NewNmapView(run *nmap.Run) *View {
@@ -41,6 +42,7 @@ func NewNmapView(run *nmap.Run) *View {
 		run:          run,
 		filter:       defaultFilter,
 		excludePorts: []int{},
+		includePorts: []int{},
 	}
 }
 
@@ -54,6 +56,10 @@ func (v *View) SetFilter(filter func(hostnames []string, ips []string) bool) {
 
 func (v *View) SetExcludePorts(ports []int) {
 	v.excludePorts = ports
+}
+
+func (v *View) SetIncludePorts(ports []int) {
+	v.includePorts = ports
 }
 
 func (v *View) GetHosts() []*nmap.Host {
@@ -90,7 +96,13 @@ func (v *View) GetURLs(prefix string, options ViewOptions) []string {
 	for _, host := range v.GetHostsWithOptions(options) {
 		for _, port := range host.Ports {
 
+			// check to see if this port should be ignored
 			if slices.Contains(v.excludePorts, int(port.ID)) {
+				continue
+			}
+
+			// check to see if this port should be included
+			if len(v.includePorts) > 0 && !slices.Contains(v.includePorts, int(port.ID)) {
 				continue
 			}
 
@@ -211,6 +223,11 @@ func (v *View) GetHostsWithOptions(options ViewOptions) []*nmap.Host {
 			continue
 		}
 
+		// Skip hosts that only have excluded ports open
+		if len(v.includePorts) > 0 && portsContains(h.Ports, v.includePorts) {
+			continue
+		}
+
 		returnHosts = append(returnHosts, h)
 	}
 
@@ -243,6 +260,17 @@ func (v *View) hostOnlyHasExcludedPorts(host *nmap.Host) bool {
 	}
 
 	return hasOpenExcludedPort
+}
+
+func portsContains(hostPorts []nmap.Port, portsToCheck []int) bool {
+	for _, hp := range hostPorts {
+		for _, port := range portsToCheck {
+			if int(hp.ID) == port {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (v *View) PrintJSON(options ViewOptions) error {
@@ -337,7 +365,7 @@ func (v *View) PrintTable(sortByArg string, options ViewOptions) {
 				if slices.Contains(v.excludePorts, port) {
 					continue
 				}
-				
+
 				if strings.EqualFold(p.Protocol, "tcp") {
 					if !ignoreTCPWrapped || p.Service.Name != "tcpwrapped" {
 						tcp = append(tcp, port)

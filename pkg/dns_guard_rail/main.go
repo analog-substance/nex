@@ -67,6 +67,36 @@ func init() {
 		},
 		DomainMatch{
 			Suffix: ".haip.transip.net",
+		},
+		DomainMatch{
+			Suffix: ".windows.net",
+		},
+		DomainMatch{
+			Suffix: ".cloudfront.net",
+		},
+		DomainMatch{
+			Suffix: ".one.com",
+		},
+		DomainMatch{
+			Suffix: ".mktossl.com",
+		},
+		DomainMatch{
+			Suffix: ".zendesk.com",
+		},
+		DomainMatch{
+			Suffix: ".cloudflare.com",
+		},
+		DomainMatch{
+			Suffix: ".document360.io",
+		},
+		DomainMatch{
+			Suffix: ".salesforce.com",
+		},
+		DomainMatch{
+			Suffix: ".hubapi.com",
+		},
+		DomainMatch{
+			Suffix: ".microsoft.com",
 		})
 
 	CDNMatches = append(CDNMatches, DomainMatch{
