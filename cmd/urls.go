@@ -85,6 +85,6 @@ func init() {
 	urlsCmd.Flags().StringP("protocol", "p", "", "protocol prefix")
 	urlsCmd.Flags().StringSlice("exclude", []string{}, "exclude")
 	urlsCmd.Flags().IntSlice("exclude-ports", []int{}, "Exclude hosts that have these ports open")
-	viewCmd.Flags().IntSlice("include-ports", []int{}, "Include these ports from the output")
+	urlsCmd.Flags().IntSlice("include-ports", []int{}, "Include these ports from the output")
 
 }
