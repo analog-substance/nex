@@ -223,8 +223,8 @@ func (v *View) GetHostsWithOptions(options ViewOptions) []*nmap.Host {
 			continue
 		}
 
-		// Skip hosts that only have excluded ports open
-		if len(v.includePorts) > 0 && portsContains(h.Ports, v.includePorts) {
+		// Skip hosts that do not have port that we want
+		if len(v.includePorts) > 0 && !portsContains(h.Ports, v.includePorts) {
 			continue
 		}
 
